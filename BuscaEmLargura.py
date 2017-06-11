@@ -6,7 +6,7 @@ class Grafo():
 	def __init__(self):
 		self.qtdVertices = 0	 	# Armazena a quantidade de vértices do grafo.	
 		self.qtdMaxAdjacentes = 0	# Armazena a quantiadde máxima de arestas para cada grafo.
-		self.vertices = []			# Armazena os vértices.
+		self.vertices = []		# Armazena os vértices.
 		self.verticesEmNivel = []	# Armazena os vértices em ordem de nível após a BFS.
 
 
@@ -60,8 +60,8 @@ class Vertice():
 		self.info = None		# Armazena o valor do vertice.
 		self.distancia = 0		# Distância até um determinado vértice.
 		self.cor = 'Branco'		# Iniciando vértice como não marcado.
-		self.adjacentes = []	# Recebe vértices adjacentes.
-		self.qtdAdjacentes = 0	# Quantidade de arestas do vértice
+		self.adjacentes = []		# Recebe vértices adjacentes.
+		self.qtdAdjacentes = 0		# Quantidade de arestas do vértice
 		self.proximo = None		# Ponteiro para o próximo vértice na fila.
 
 	def setInfo(self, info):
