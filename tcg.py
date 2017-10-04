@@ -9,7 +9,7 @@ class Vertex(object):
 		self.degree = 0
 		self.label = ""
 		self.neighbors = []
-		self.ecNumber = 0
+		self.ecNumber = 0 #not being used for now
 
 
 	def printNeighbors(self):
@@ -23,8 +23,8 @@ class Vertex(object):
 
 class Graph(object):
 	def __init__(self):
-		self.n = 0			# Number of vertices 
-		self.ocurrences = 0 # Number of ocurrences
+		self.n = 0	        # Number of vertices 
+		self.ocurrences = 0 	# Number of ocurrences
 		self.maxN = 0		# Max number of vertices
 		self.maxColor = 0	# Max number of colors
 		self.vList = []		# List of vertices
@@ -39,6 +39,7 @@ class Graph(object):
 		for vertex in self.vList:
 			vertex.printNeighbors()	
 
+	#creates a graph referring to the input file		
 	def CreateMotif(self, archive):
 		arc = open(archive, 'r')
 		entry = arc.readline()
@@ -64,7 +65,7 @@ class Graph(object):
 			self.vList[int(index)].neighbors.append(self.vList[int(neighbor)])
 			self.vList[int(neighbor)].neighbors.append(self.vList[int(index)])	
 		arc.close()	
-
+	#A Simple depth-first search
 	def dfs(self):
 		for vertex in self.vList:
 			vertex.status = V_ENABLE
@@ -73,7 +74,7 @@ class Graph(object):
 			if(vertex.status):
 				self.dfsVisit(vertex)
 
-		
+	#2 step of depth-first search	
 	def dfsVisit(self, vertex):
 		
 		vertex.status = V_DISABLE
@@ -84,7 +85,7 @@ class Graph(object):
 
 		self.topologicalOrder.append(vertex)
 
-
+	#search for an instance of the motif in the graph
 	def TCG(self, motif):
 		for i in range(len(motif.topologicalOrder)):
 			v = motif.topologicalOrder[i]
@@ -111,7 +112,7 @@ class Graph(object):
 			for a in self.vList:
 				if a.status == V_ENABLE and a.color == v.color:
 					self.vList[a.id].status = V_DISABLE			
-
+	#It says if two vertices are adjacent
 	def adjTo(self, x, w):
 		for vertex in x.neighbors:
 			if(vertex.status == 1 and vertex.color == w.color):
@@ -155,7 +156,8 @@ for line in arq.readlines():
 	graph.vList[int(adj)].neighbors.append(graph.vList[int(index)])
 
 
-arq.close()	
+arq.close()
+
 motif = Graph()
 
 motif.CreateMotif("motif-600.txt")
