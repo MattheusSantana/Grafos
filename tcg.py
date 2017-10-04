@@ -65,7 +65,6 @@ class Graph(object):
 			self.vList[int(neighbor)].neighbors.append(self.vList[int(index)])	
 		arc.close()	
 
-	#the final order of dfs is reverse.	
 	def dfs(self):
 		for vertex in self.vList:
 			vertex.status = V_ENABLE
@@ -74,19 +73,15 @@ class Graph(object):
 			if(vertex.status):
 				self.dfsVisit(vertex)
 
-		#self.topologicalOrder.reverse()			
-
+		
 	def dfsVisit(self, vertex):
-		#Pintando o vértice de cinza.
+		
 		vertex.status = V_DISABLE
 	
-		#Navegando pelos vertices v adj[v, u]
 		for neighbor in vertex.neighbors:
-			#Caso o vértice não tenha sido visitado ainda, chame a função de forma recursiva, navegando mais profundamente no grafo.
 			if(neighbor.status):
 				self.dfsVisit(neighbor)
 
-		#Adicionando o vértice já processado em uma lista.
 		self.topologicalOrder.append(vertex)
 
 
