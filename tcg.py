@@ -12,6 +12,8 @@ class Vertex(object):
 		self.ecNumber = 0 		#not being used for now
 		self.brand = V_ENABLE	#it may be that you participate in a motif
 		self.level = 0			#discovery time of DFS 
+		self.successors = []
+		self.value = 1
 
 	def printNeighbors(self):
 		print("%d  {"%(self.id), end="")
@@ -21,6 +23,17 @@ class Vertex(object):
 		print("}")	
 	
 
+	def isAdjacent(self, i):
+		for x in self.neighbors:
+			if x.id == i:
+				return 1
+		return 0	
+
+	def printSuccessors(self):
+		print(self.id, "|", self.value, "--> {", end=" ")
+		for successor in self.successors:
+			print("-->",successor.id, end=" ")	
+		print("}")
 
 class Graph(object):
 	def __init__(self):
@@ -29,9 +42,9 @@ class Graph(object):
 		self.maxN = 0		# Max number of vertices
 		self.maxColor = 0	# Max number of colors
 		self.vList = []		# List of vertices
-		self.topologicalOrder = []
+		self.topologicalSort = []
 		self.level = 0
-		
+
 		self.map = []
 	def printVertices(self):
 		for vertex in self.vList:
@@ -82,16 +95,17 @@ class Graph(object):
 	
 		for neighbor in vertex.neighbors:
 			if(neighbor.status):
+				vertex.successors.append(neighbor)
 				self.dfsVisit(neighbor)
 
 		vertex.level = self.level		
 		self.level +=1
-		self.topologicalOrder.append(vertex)
+		self.topologicalSort.append(vertex)
 
 	#search for an instance of the motif in the graph
 	def TCG(self, motif):
-		for i in range(len(motif.topologicalOrder)):
-			v = motif.topologicalOrder[i]
+		for i in range(len(motif.topologicalSort)):
+			v = motif.topologicalSort[i]
 			A = []
 			w = None
 			
@@ -108,7 +122,7 @@ class Graph(object):
 					break
 			
 
-			if(i == len(motif.topologicalOrder)-1):
+			if(i == len(motif.topologicalSort)-1):
 				self.map.append(v)
 				if(len(A) == 0):
 					print("No occurrences")
@@ -149,7 +163,7 @@ class Graph(object):
 			index =  self.map[i].level
 			
 			vertex = array[index]
-			color = motif.topologicalOrder[i].color
+			color = motif.topologicalSort[i].color
 			
 			
 			for neighbor in vertex.neighbors:
@@ -162,11 +176,81 @@ class Graph(object):
 		for i in range(0, len(array), 1):
 			print(array[i].id, end=" ")
 						
+
+	def proxSeq(self, l, n):
+	    i = len (l) - 1
+	    x = n - 1
+	    while i >= 0 and l[i] == x: 
+	       i -= 1
+	       x -= 1
+	    if i == -1: return 0
+	    x = l[i] + 1
+	    while i < len(l):
+	   	   l[i] = x
+	   	   x += 1
+	   	   i += 1
+	    return 1
+
+	def subsets(self, l, n):
+		while(self.proxSeq(l,n)== 1):
+			for i in range(1, len(l), 1):
+				if not self.vList[l[0]].isAdjacent(l[i]):
+					print(self.vList[l[0]].id, l[i])
+					#Adding edges in the vertex 
+					self.vList[l[0]].neighbors.append(self.vList[l[i]])
+					self.vList[l[i]].neighbors.append(self.vList[0])
+			
+			print("")	
+	
+
+
+	def printSuccessors(self):
+		for vertex in self.vList:
+			print("Vertice => ", vertex.id, "Value =>", vertex.value, "-> {", end=" ")
+			for successor in vertex.successors:
+				print(successor.id, end=" ")
+			print("}")	
+
+	def countOcurrences(self, motif):
+		for m in motif.topologicalSort:
+			for v in self.vList:
+				if v.color == m.color:
+					countSuccessorM = 0
+					countSuccessorV = 0
+					count = 1
+					for successor in m.successors:
+						adder = 0
+						countSuccessorM +=1
+						flag = False
+						
+						for neighbor in v.neighbors:
+							if neighbor.color == successor.color:
+								v.successors.append(neighbor)
+								adder+= neighbor.value
+								flag = True
+						if flag:
+							countSuccessorV +=1
+
+						count *= adder		
+					
+					if countSuccessorM == countSuccessorV:
+						v.value = count
+					else:
+						v.value = 0														
+					v.printSuccessors()
+		color = motif.topologicalSort[-1].color
+		result = 0
+		for vertex in self.vList:
+			if vertex.color == color:
+				result+= vertex.value
+		print("Total Ocurrences: ", result)		
+						
+							
 #Initializing graph that be populated.
 graph = Graph()	
 
 #Open archive reference to graph
-arq = open('graph-2.txt', 'r')
+arq = open('graph-e.coli_BioCyc_K12-clean.txt', 'r')
 
 #reading number of vertices and number maxime of colors
 firstLine = arq.readline()
@@ -203,15 +287,35 @@ arq.close()
 
 motif = Graph()
 
-motif.CreateMotif("motif-2.txt")
+motif.CreateMotif("motif-600.txt")
+'''
+graph.subsets(list(range(2)), len(graph.vList))
 
 motif.dfs()
 print("Ordem topologica")
-for x  in motif.topologicalOrder:
+for x  in motif.topologicalSort:
 	print(x.id, end=" - ")
 print("\n------------------")
 graph.TCG(motif)
-
+	
 #save an occurrence.
 v = [None] * len(motif.vList)
 graph.ocurrence(v, motif)
+'''
+motif.dfs()
+graph.printAdjacents()
+#motif.printSuccessors()
+print("------------------------------")
+
+graph.countOcurrences(motif)
+
+
+
+
+
+
+
+
+
+
+
