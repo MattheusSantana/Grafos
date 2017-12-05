@@ -1,3 +1,4 @@
+import time
 V_ENABLE = 1
 V_DISABLE = 0
 
@@ -12,7 +13,7 @@ class Vertex(object):
 		self.ecNumber = 0 		#not being used for now
 		self.brand = V_ENABLE	#it may be that you participate in a motif
 		self.level = 0			#discovery time of DFS 
-		self.successors = []
+		self.successors = {}
 		self.value = 1
 
 	def printNeighbors(self):
@@ -44,8 +45,10 @@ class Graph(object):
 		self.vList = []		# List of vertices
 		self.topologicalSort = []
 		self.level = 0
-
+		self.colorTable = [] 
 		self.map = []
+	
+
 	def printVertices(self):
 		for vertex in self.vList:
 			print(vertex.id, vertex.color, vertex.label)	
@@ -95,7 +98,7 @@ class Graph(object):
 	
 		for neighbor in vertex.neighbors:
 			if(neighbor.status):
-				vertex.successors.append(neighbor)
+				vertex.successors[neighbor.color] = 0
 				self.dfsVisit(neighbor)
 
 		vertex.level = self.level		
@@ -202,56 +205,64 @@ class Graph(object):
 			
 			print("")	
 	
-
-
 	def printSuccessors(self):
 		for vertex in self.vList:
-			print("Vertice => ", vertex.id, "Value =>", vertex.value, "-> {", end=" ")
-			for successor in vertex.successors:
-				print(successor.id, end=" ")
+			print("Vertice => ", vertex.id, "-> {", end="")
+			for key in vertex.successors.keys():
+				print("->", key, ":", vertex.successors.get(key), end=" ")
 			print("}")	
 
+	
+	#1 - For each m vertex of the motif in the topological sort.
+	#2 - For each v vertex of the graph with the same color as m.
+	#3 -v receives the same successors as m.
+	#4 -For each neighbor of v who is also a successor of v.
+	#5 -Increase the neighbor / successor value in your respective key.
+	#6 -Multiply the key values such that the total value of v is the result of this multiplication.
+	#7 -The last calculated result will be the printed output.
 	def countOcurrences(self, motif):
 		for m in motif.topologicalSort:
-			for v in self.vList:
-				if v.color == m.color:
-					countSuccessorM = 0
-					countSuccessorV = 0
-					count = 1
-					for successor in m.successors:
-						adder = 0
-						countSuccessorM +=1
-						flag = False
-						
-						for neighbor in v.neighbors:
-							if neighbor.color == successor.color:
-								v.successors.append(neighbor)
-								adder+= neighbor.value
-								flag = True
-						if flag:
-							countSuccessorV +=1
+			
+			result = 0 # Will save the final result
+			
+			for v in self.colorTable[m.color]:
+				
+				v.successors = m.successors.copy()
+	
+				for neighbor in v.neighbors:
+					if v.successors.get(neighbor.color) != None:
+						v.successors[neighbor.color] += neighbor.value
 
-						count *= adder		
-					
-					if countSuccessorM == countSuccessorV:
-						v.value = count
-					else:
-						v.value = 0														
-					v.printSuccessors()
-		color = motif.topologicalSort[-1].color
-		result = 0
-		for vertex in self.vList:
-			if vertex.color == color:
-				result+= vertex.value
-		print("Total Ocurrences: ", result)		
+				total = 1		
+				for key in v.successors.keys():
+					total *= v.successors.get(key)
+				v.value = total
+				result += total
+		print("Total Ocurrences: ",result)		
 						
-							
+	def initializeColorTable(self):
+		length = self.maxColor
+		for i in range(length):	
+			vector = []
+			self.colorTable.append(vector)
+
+		for x in self.vList:
+			self.colorTable[x.color].append(x)
+
+	def printColorTable(self):
+		length = len(self.colorTable)
+		for i in range(length):
+			print(i, "{", end="")
+			for vertex in self.colorTable[i]:
+				print("->",vertex.id, end = " ")
+			print("}")				
+
 #Initializing graph that be populated.
 graph = Graph()	
 
 #Open archive reference to graph
 arq = open('graph-e.coli_BioCyc_K12-clean.txt', 'r')
-
+#arq =  open('graph-3.txt', 'r')
 #reading number of vertices and number maxime of colors
 firstLine = arq.readline()
 
@@ -288,34 +299,35 @@ arq.close()
 motif = Graph()
 
 motif.CreateMotif("motif-600.txt")
-'''
-graph.subsets(list(range(2)), len(graph.vList))
+#motif.CreateMotif("motif-3.txt")
 
+''' ------------> Creating subsets <----------
+graph.subsets(list(range(2)), len(graph.vList))
+'''
+
+''' ------> Calling the TCG function <--------
 motif.dfs()
-print("Ordem topologica")
-for x  in motif.topologicalSort:
-	print(x.id, end=" - ")
-print("\n------------------")
 graph.TCG(motif)
-	
+'''	
+
+
+''' ------> Getting an occurrence <-----------
+motif.dfs()
+graph.TCG(motif)
+
 #save an occurrence.
 v = [None] * len(motif.vList)
 graph.ocurrence(v, motif)
 '''
+
+
+#---> Counting the number of occurrences <----
 motif.dfs()
-graph.printAdjacents()
-#motif.printSuccessors()
-print("------------------------------")
-
+graph.initializeColorTable()
+inicio = time.time()
 graph.countOcurrences(motif)
-
-
-
-
-
-
-
-
+fim = time.time()
+print("%0.9f" %(fim - inicio))
 
 
 
